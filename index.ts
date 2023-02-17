@@ -1,3 +1,5 @@
+// tsc && node dist/index.js
+
 class MyArray {
   list: number[];
   private length: number;
@@ -251,3 +253,117 @@ class LinkedList {
     return false;
   }
 }
+
+class Stack {
+  list: number[] | string[];
+  size: number;
+
+  constructor() {
+    this.list = [];
+    this.size = 0;
+  }
+
+  push(value: number | string) {
+    this.list[this.size++] = value;
+  }
+
+  pop() {
+    let last = this.peek;
+
+    this.list.length--;
+    this.size--;
+
+    return last;
+  }
+
+  get peek() {
+    return this.list[this.size - 1];
+  }
+
+  get empty() {
+    return this.size === 0;
+  }
+}
+
+function reverseString(str: string): string {
+  let stack = new Stack();
+
+  for (let letter of str) stack.push(letter);
+
+  let reverse = "";
+
+  while (!stack.empty) {
+    reverse += stack.pop();
+  }
+
+  return reverse;
+}
+
+function balanceExpressions(str: string) {
+  const left = ["(", "[", "{", "<"];
+  const right = [")", "]", "}", ">"];
+
+  let stack = new Stack();
+
+  for (let letter of str) {
+    if (left.includes(letter)) stack.push(letter);
+
+    if (right.includes(letter)) {
+      let popped = stack.pop() as string;
+      if (right.indexOf(letter) === left.indexOf(popped)) continue;
+      else return false;
+    }
+  }
+
+  return stack.empty;
+}
+
+class MinStack {
+  list: number[];
+  size: number;
+  min: number[];
+
+  constructor() {
+    this.list = [];
+    this.min = [];
+    this.size = 0;
+  }
+
+  push(value: number) {
+    this.list[this.size++] = value;
+    if (this.min.length === 0 || this.min[this.min.length - 1] > value)
+      this.min.push(value);
+  }
+
+  pop() {
+    let last = this.peek;
+
+    this.list.length--;
+    this.size--;
+
+    if (last === this.min[this.min.length]) this.min.length--;
+
+    return last;
+  }
+
+  get peek() {
+    return this.list[this.size - 1];
+  }
+
+  get empty() {
+    return this.size === 0;
+  }
+
+  get getMin() {
+    return this.min[this.min.length - 1];
+  }
+}
+
+let stack = new MinStack();
+stack.push(8);
+stack.push(3);
+stack.push(3);
+stack.push(1);
+stack.push(7);
+
+console.log(stack.getMin);
