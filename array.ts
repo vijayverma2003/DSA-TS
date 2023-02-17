@@ -1,4 +1,4 @@
-class MyArray {
+export default class MyArray {
   list: number[];
   private length: number;
 
