@@ -359,11 +359,78 @@ class MinStack {
   }
 }
 
-let stack = new MinStack();
-stack.push(8);
-stack.push(3);
-stack.push(3);
-stack.push(1);
-stack.push(7);
+class Queue {
+  list: number[];
 
-console.log(stack.getMin);
+  constructor() {
+    this.list = [];
+  }
+
+  enqueue(value: number) {
+    this.list.push(value);
+  }
+
+  dequeue() {
+    let first = this.list[0];
+
+    for (let i = 0; i < this.list.length; i++) {
+      this.list[i] = this.list[i + 1];
+    }
+
+    this.list.length--;
+
+    return first;
+  }
+
+  get peek() {
+    return this.list[0];
+  }
+
+  get empty() {
+    return this.list.length === 0;
+  }
+
+  reverse() {
+    let stack = new Stack();
+
+    for (let item of this.list) stack.push(item);
+
+    let reversed = new Queue();
+
+    while (!stack.empty) reversed.enqueue(stack.pop() as number);
+
+    return reversed;
+  }
+}
+
+class PriorityQueue {
+  list: number[];
+
+  constructor() {
+    this.list = [];
+  }
+
+  enqueue(value: number) {
+    if (this.list.length === 0) {
+      this.list.push(value);
+      return;
+    }
+
+    for (let i = this.list.length - 1; i >= 0; i--) {
+      if (value < this.list[i]) this.list[i + 1] = this.list[i];
+      else {
+        this.list[i + 1] = value;
+        break;
+      }
+    }
+  }
+}
+
+let q = new PriorityQueue();
+q.enqueue(1);
+q.enqueue(3);
+q.enqueue(4);
+q.enqueue(5);
+q.enqueue(2);
+
+console.log(q);
