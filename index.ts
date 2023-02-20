@@ -67,19 +67,19 @@ class MyArray {
   }
 }
 
-class LinkedListNode {
-  next: LinkedListNode | null;
-  value: number | null;
+class LinkedListNode<V> {
+  next: LinkedListNode<V> | null;
+  value: V | null;
 
-  constructor(value: number | null, next: LinkedListNode | null = null) {
+  constructor(value: V | null, next: LinkedListNode<V> | null = null) {
     this.value = value;
     this.next = next;
   }
 }
 
-class LinkedList {
-  head: LinkedListNode | null;
-  tail: LinkedListNode | null;
+class LinkedList<V> {
+  head: LinkedListNode<V> | null;
+  tail: LinkedListNode<V> | null;
   size: number;
 
   constructor() {
@@ -88,9 +88,9 @@ class LinkedList {
     this.size = 0;
   }
 
-  addFirst(value: number) {
+  addFirst(value: V) {
     this.size++;
-    const node = new LinkedListNode(value);
+    const node = new LinkedListNode<V>(value);
 
     if (!this.head) this.head = this.tail = node;
 
@@ -98,9 +98,9 @@ class LinkedList {
     this.head = node;
   }
 
-  addLast(value: number) {
+  addLast(value: V) {
     this.size++;
-    const node = new LinkedListNode(value);
+    const node = new LinkedListNode<V>(value);
 
     if (!this.tail) this.head = this.tail = node;
 
@@ -108,7 +108,7 @@ class LinkedList {
     this.tail = node;
   }
 
-  indexOf(value: number) {
+  indexOf(value: V) {
     let first = this.head;
     let index = 0;
 
@@ -121,8 +121,26 @@ class LinkedList {
     return -1;
   }
 
-  contains(value: number): boolean {
+  contains(value: V): boolean {
     return this.indexOf(value) !== -1;
+  }
+
+  remove(value: V) {
+    if (!this.head) return;
+
+    let curr: LinkedListNode<V> | null = this.head;
+
+    while (curr) {
+      if (curr.next && curr.next.value === value) {
+        if (curr.next === this.tail) this.tail = curr;
+        curr.next = curr.next.next;
+        this.size--;
+        return;
+      }
+      curr = curr.next;
+    }
+
+    return;
   }
 
   removeFirst() {
@@ -164,7 +182,7 @@ class LinkedList {
 
     const arr = [];
 
-    let first: LinkedListNode | null = this.head;
+    let first: LinkedListNode<V> | null = this.head;
 
     while (first) {
       arr.push(first.value);
@@ -177,11 +195,11 @@ class LinkedList {
   reverse() {
     if (!this.head) return;
 
-    let prev: LinkedListNode | null = null;
-    let current: LinkedListNode | null = this.head;
+    let prev: LinkedListNode<V> | null = null;
+    let current: LinkedListNode<V> | null = this.head;
 
     while (current) {
-      let next: null | LinkedListNode = current.next;
+      let next: null | LinkedListNode<V> = current.next;
       current.next = prev;
       prev = current;
 
@@ -207,7 +225,7 @@ class LinkedList {
       else return;
     }
 
-    let first: null | LinkedListNode = this.head;
+    let first: null | LinkedListNode<V> = this.head;
 
     while (curr.next) {
       first = first!.next;
@@ -220,8 +238,8 @@ class LinkedList {
   printMiddle() {
     if (!this.head) return;
 
-    let first: null | LinkedListNode = this.head;
-    let second: null | LinkedListNode = this.head;
+    let first: null | LinkedListNode<V> = this.head;
+    let second: null | LinkedListNode<V> = this.head;
 
     while (
       second &&
@@ -241,8 +259,8 @@ class LinkedList {
   hasLoop() {
     if (!this.head) return;
 
-    let first: null | LinkedListNode = this.head;
-    let second: null | LinkedListNode = this.head;
+    let first: null | LinkedListNode<V> = this.head;
+    let second: null | LinkedListNode<V> = this.head;
 
     while (second && second.next) {
       second = second.next.next;
@@ -426,11 +444,88 @@ class PriorityQueue {
   }
 }
 
-let q = new PriorityQueue();
-q.enqueue(1);
-q.enqueue(3);
-q.enqueue(4);
-q.enqueue(5);
-q.enqueue(2);
+function findFirstNonRepeatableCharacter(str: string) {
+  str = str.toLowerCase();
 
-console.log(q);
+  let frequency: {
+    [key: string]: number;
+  } = {};
+
+  for (let letter of str)
+    frequency[letter] = frequency[letter] ? frequency[letter] + 1 : 1;
+
+  for (let key in frequency) if (frequency[key] === 1) return key;
+
+  return null;
+}
+
+function findFirstRepeatedCharacter(str: string) {
+  str = str.toLowerCase();
+
+  const set = new Set();
+
+  for (let letter of str) {
+    if (set.has(letter)) return letter;
+    set.add(letter);
+  }
+
+  return null;
+}
+
+class KeyValuePair {
+  constructor(public key: number, public value: string) {}
+}
+
+class HashTable {
+  list: LinkedList<KeyValuePair>[];
+  size: number;
+
+  constructor(size: number) {
+    this.list = [];
+    this.size = size;
+  }
+
+  private getIndex(key: number) {
+    return key < this.size ? key : key % this.size;
+  }
+
+  put(key: number, value: string) {
+    let index = this.getIndex(key);
+
+    let pair = new KeyValuePair(key, value);
+
+    if (!this.list[index]) this.list[index] = new LinkedList();
+
+    this.list[index].addLast(pair);
+    return this.list;
+  }
+
+  get(key: number) {
+    let index = this.getIndex(key);
+
+    let ll = this.list[index];
+    if (!ll) return undefined;
+
+    let curr = ll.head;
+
+    while (curr) {
+      if (curr.value?.key === key) return curr.value;
+      curr = curr.next;
+    }
+
+    return undefined;
+  }
+
+  remove(key: number) {
+    let index = this.getIndex(key);
+
+    let ll = this.list[index];
+    if (!ll) return undefined;
+
+    let pair = this.get(key);
+    if (pair) ll.remove(pair);
+
+    return pair;
+  }
+}
+
