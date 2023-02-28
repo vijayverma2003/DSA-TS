@@ -529,3 +529,191 @@ class HashTable {
   }
 }
 
+class BTNode {
+  left: BTNode | null;
+  right: BTNode | null;
+
+  constructor(public value: number) {
+    this.left = null;
+    this.right = null;
+  }
+
+  toString() {
+    return `Node ${this.value}`;
+  }
+}
+
+class BinaryTree {
+  root: BTNode | null;
+
+  constructor() {
+    this.root = null;
+  }
+
+  insert(value: number) {
+    const node = new BTNode(value);
+
+    if (!this.root) {
+      this.root = node;
+      return;
+    }
+
+    let current: BTNode | null = this.root;
+
+    while (true) {
+      if (current.value > value) {
+        if (current.left === null) {
+          current.left = node;
+          break;
+        }
+        current = current.left;
+      } else {
+        if (current.right === null) {
+          current.right = node;
+          break;
+        }
+        current = current.right;
+      }
+    }
+
+    return this.root;
+  }
+
+  find(value: number) {
+    let current = this.root;
+
+    while (current) {
+      if (value === current.value) return true;
+
+      if (value < current.value) current = current.left;
+      else current = current.right;
+    }
+
+    return false;
+  }
+
+  private _traversePreOrder(root: BTNode | null) {
+    if (!root) return;
+
+    console.log(root.value);
+    this._traversePreOrder(root.left);
+    this._traversePreOrder(root.right);
+  }
+
+  traversePreOrder() {
+    this._traversePreOrder(this.root);
+  }
+
+  private _traverseInOrder(root: BTNode | null) {
+    if (!root) return;
+
+    this._traverseInOrder(root.left);
+    console.log(root.value);
+    this._traverseInOrder(root.right);
+  }
+
+  traverseInOrder() {
+    this._traverseInOrder(this.root);
+  }
+
+  private _traversePostOrder(root: BTNode | null) {
+    if (!root) return;
+
+    this._traversePostOrder(root.left);
+    this._traversePostOrder(root.right);
+    console.log(root.value);
+  }
+
+  traversePostOrder() {
+    this._traversePostOrder(this.root);
+  }
+
+  private _height(root: BTNode | null): number {
+    if (!root) return -1;
+
+    return 1 + Math.max(this._height(root.left), this._height(root.right));
+  }
+
+  height() {
+    return this._height(this.root);
+  }
+
+  private _min(root: BTNode | null) {
+    if (!root) return 0;
+
+    if (!root.left && !root.right) return root.value;
+
+    let left: number = this._min(root.left);
+    let right: number = this._min(root.right);
+
+    return Math.min(Math.min(left, right), root.value);
+  }
+
+  min() {
+    return this._min(this.root);
+  }
+
+  private _equals(current: BTNode | null, root: BTNode | null): boolean {
+    if (!root && !current) return true;
+
+    if (current && root)
+      return (
+        root.value === current.value &&
+        this._equals(current.left, root.left) &&
+        this._equals(current.right, root.right)
+      );
+
+    return false;
+  }
+
+  equals(tree: BinaryTree) {
+    return this._equals(this.root, tree.root);
+  }
+
+  private _validate(root: BTNode | null, min: number, max: number): boolean {
+    if (!root) return true;
+
+    return (
+      root.value > min &&
+      root.value < max &&
+      this._validate(root.left, min, root.value) &&
+      this._validate(root.right, root.value, max)
+    );
+  }
+
+  validate() {
+    return this._validate(this.root, Number.MIN_VALUE, Number.MAX_VALUE);
+  }
+
+  private _nodesAtKthDistance(root: BTNode | null, k: number, arr: number[]) {
+    if (!root) return;
+
+    if (k === 0) return arr.push(root.value);
+
+    this._nodesAtKthDistance(root.left, k - 1, arr);
+    this._nodesAtKthDistance(root.right, k - 1, arr);
+  }
+
+  nodesAtKthDistance(k: number) {
+    let arr: number[] = [];
+    this._nodesAtKthDistance(this.root, k, arr);
+    return arr;
+  }
+
+  traverseLevelOrder() {
+    for (let i = 0; i <= this.height(); i++) {
+      console.log(this.nodesAtKthDistance(i).toString());
+    }
+  }
+}
+
+const bt = new BinaryTree();
+bt.insert(7);
+bt.insert(4);
+bt.insert(9);
+bt.insert(1);
+bt.insert(6);
+bt.insert(8);
+bt.insert(10);
+
+bt.traverseLevelOrder();
