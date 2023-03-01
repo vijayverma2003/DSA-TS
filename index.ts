@@ -707,13 +707,108 @@ class BinaryTree {
   }
 }
 
-const bt = new BinaryTree();
-bt.insert(7);
-bt.insert(4);
-bt.insert(9);
-bt.insert(1);
-bt.insert(6);
-bt.insert(8);
-bt.insert(10);
+class AVLNode {
+  value: number;
+  left: AVLNode | null;
+  right: AVLNode | null;
+  height: number;
 
-bt.traverseLevelOrder();
+  constructor(value: number) {
+    this.value = value;
+    this.left = null;
+    this.right = null;
+    this.height = 0;
+  }
+}
+
+class AVLTree {
+  root: AVLNode | null;
+
+  constructor() {
+    this.root = null;
+  }
+
+  private height(node: AVLNode | null) {
+    return node ? node.height : -1;
+  }
+
+  private setHeight(node: AVLNode) {
+    return Math.max(this.height(node.left), this.height(node.right)) + 1;
+  }
+
+  private balanceFactor(node: AVLNode | null) {
+    return node ? this.height(node.left) - this.height(node.right) : 0;
+  }
+
+  private isLeftHeavy(node: AVLNode) {
+    return this.balanceFactor(node) > 1;
+  }
+
+  private isRightHeavy(node: AVLNode) {
+    return this.balanceFactor(node) < -1;
+  }
+
+  private leftRotate(node: AVLNode) {
+    let newRoot = node.right;
+    node.right = newRoot!.left;
+    newRoot!.left = node;
+
+    newRoot!.height = this.setHeight(newRoot as AVLNode);
+    node.height = this.setHeight(node);
+
+    return newRoot;
+  }
+
+  private rightRotate(node: AVLNode) {
+    let newRoot = node.left;
+    node.left = newRoot!.right;
+    newRoot!.right = node;
+
+    newRoot!.height = this.setHeight(newRoot as AVLNode);
+    node.height = this.setHeight(node);
+
+    return newRoot;
+  }
+
+  private balance(node: AVLNode) {
+    if (this.isLeftHeavy(node)) {
+      if (node.left && this.balanceFactor(node.left) < 0)
+        node.left = this.leftRotate(node.left);
+
+      node = this.rightRotate(node) as AVLNode;
+    } else if (this.isRightHeavy(node)) {
+      if (node.right && this.balanceFactor(node.right) > 0)
+        node.right = this.rightRotate(node.right);
+
+      node = this.leftRotate(node) as AVLNode;
+    }
+
+    return node;
+  }
+
+  private _insert(root: AVLNode | null, value: number): AVLNode {
+    if (!root) {
+      return new AVLNode(value);
+    }
+
+    if (value < root.value) root.left = this._insert(root.left, value);
+    else root.right = this._insert(root.right, value);
+
+    root.height = this.setHeight(root);
+
+    root = this.balance(root) as AVLNode;
+
+    return root;
+  }
+
+  insert(value: number) {
+    this.root = this._insert(this.root, value);
+  }
+}
+
+const tree = new AVLTree();
+tree.insert(3);
+tree.insert(2);
+tree.insert(1);
+
+console.log(tree);
