@@ -910,3 +910,129 @@ class Heap {
     return root;
   }
 }
+
+// Tries
+
+// Tries name came from Retrievals, They are also called, Digital, Radix, Prefix trees
+
+class TrieNode {
+  value: string | null;
+  children: { [key: string]: TrieNode };
+  isEndOfWord: boolean;
+
+  constructor(value: string | null) {
+    this.value = value;
+    this.children = {};
+    this.isEndOfWord = false;
+  }
+
+  hasChild(ch: string) {
+    return this.children.hasOwnProperty(ch);
+  }
+
+  getChild(ch: string) {
+    return this.children[ch];
+  }
+
+  addChild(ch: string) {
+    this.children[ch] = new TrieNode(ch);
+  }
+
+  getChildren() {
+    let nodes = [];
+    for (let ch in this.children) nodes.push(this.children[ch]);
+
+    return nodes;
+  }
+
+  hasChildren() {
+    return this.getChildren().length !== 0;
+  }
+
+  removeChild(ch: string) {
+    delete this.children[ch];
+  }
+}
+
+class Trie {
+  root: TrieNode;
+
+  constructor() {
+    this.root = new TrieNode(null);
+  }
+
+  insert(word: string) {
+    if (!word || typeof word !== "string")
+      throw new Error("Enter a valid string!");
+
+    let current = this.root;
+
+    for (let ch of word) {
+      if (!current.hasChild(ch)) current.addChild(ch);
+      current = current.getChild(ch);
+    }
+
+    current.isEndOfWord = true;
+
+    return this.root;
+  }
+
+  contains(word: string) {
+    if (!word || typeof word !== "string") return false;
+
+    let current = this.root;
+
+    for (let ch of word) {
+      if (current.hasChild(ch)) current = current.getChild(ch);
+      else return false;
+    }
+
+    return current.isEndOfWord;
+  }
+
+  private _remove(node: TrieNode, word: string, index: number = 0) {
+    if (index === word.length) {
+      node.isEndOfWord = false;
+      return;
+    }
+
+    const ch = word[index];
+
+    let child = node.getChild(ch);
+
+    if (!child) return;
+
+    this._remove(child, word, ++index);
+
+    node.isEndOfWord = false;
+
+    if (!child.hasChildren() && !node.isEndOfWord) node.removeChild(ch);
+  }
+
+  remove(word: string) {
+    if (!word || typeof word !== "string") return;
+    this._remove(this.root, word);
+  }
+
+  autoComplete(word: string) {
+    if (!word || typeof word !== "string") return;
+
+    let current = this.root;
+    for (let ch of word)
+      if (current.hasChild(ch)) current = current.getChild(ch);
+
+    const words: string[] = [];
+
+    this._autoComplete(current, word, words);
+    return words;
+  }
+
+  private _autoComplete(root: TrieNode, word: string, words: string[]) {
+    if (root.isEndOfWord) words.push(word);
+
+    for (let child of root.getChildren())
+      this._autoComplete(child, word + child.value, words);
+
+    return;
+  }
+}
