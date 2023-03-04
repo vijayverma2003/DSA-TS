@@ -806,9 +806,107 @@ class AVLTree {
   }
 }
 
-const tree = new AVLTree();
-tree.insert(3);
-tree.insert(2);
-tree.insert(1);
+// Heaps are used in sorting and graph algorithms. In heap every level except potentially the last level in filled with nodes.
+// In heap the nodes are filled from left to right and the value of the parent node is always greater than its children this is called
+// heap property.
 
-console.log(tree);
+// Heap is a completed binary tree which satisfies the heap property.
+// Max Heap's root holds the maximum value, and other is min heap.
+
+class Heap {
+  list: number[];
+
+  constructor() {
+    this.list = [];
+  }
+
+  get isEmpty() {
+    return this.list.length === 0;
+  }
+
+  private getParent(index: number) {
+    return Math.floor((index - 1) / 2);
+  }
+
+  private leftChildIndex(index: number) {
+    return index * 2 + 1;
+  }
+
+  private rightChildIndex(index: number) {
+    return index * 2 + 2;
+  }
+
+  private getLeftChild(index: number) {
+    return this.list[this.leftChildIndex(index)];
+  }
+
+  private getRightChild(index: number) {
+    return this.list[this.rightChildIndex(index)];
+  }
+
+  private hasLeftChild(index: number) {
+    return this.leftChildIndex(index) < this.list.length;
+  }
+
+  private hasRightChild(index: number) {
+    return this.rightChildIndex(index) < this.list.length;
+  }
+
+  private swap(a: number, b: number) {
+    let temp = this.list[a];
+    this.list[a] = this.list[b];
+    this.list[b] = temp;
+  }
+
+  private bubbleUp(index: number = this.list.length - 1) {
+    let value = this.list[index];
+    let parent = this.getParent(index);
+
+    while (parent >= 0 && this.list[parent] < value) {
+      this.swap(parent, index);
+      index = parent;
+      parent = this.getParent(parent);
+    }
+
+    return this.list;
+  }
+
+  private largerChildIndex(index: number) {
+    if (!this.hasLeftChild) return index;
+
+    if (!this.hasRightChild) return this.leftChildIndex(index);
+
+    return this.getLeftChild(index) >= this.getRightChild(index)
+      ? this.leftChildIndex(index)
+      : this.rightChildIndex(index);
+  }
+
+  private bubbleDown(index: number = 0) {
+    let maximum = this.largerChildIndex(index);
+
+    while (index < this.list.length) {
+      if (this.list[index] < this.list[maximum]) {
+        this.swap(index, maximum);
+        index = maximum;
+        continue;
+      }
+
+      break;
+    }
+
+    return this.list;
+  }
+
+  insert(value: number) {
+    this.list.push(value);
+    return this.bubbleUp();
+  }
+
+  remove() {
+    const root = this.list[0];
+    this.list[0] = this.list[this.list.length - 1];
+    this.list.length--;
+    this.bubbleDown();
+    return root;
+  }
+}
