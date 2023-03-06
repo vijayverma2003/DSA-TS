@@ -88,6 +88,10 @@ class LinkedList<V> {
     this.size = 0;
   }
 
+  isEmpty() {
+    return this.head === null;
+  }
+
   addFirst(value: V) {
     this.size++;
     const node = new LinkedListNode<V>(value);
@@ -102,20 +106,24 @@ class LinkedList<V> {
     this.size++;
     const node = new LinkedListNode<V>(value);
 
-    if (!this.tail) this.head = this.tail = node;
+    if (!this.tail) {
+      this.head = node;
+      this.tail = node;
+      return;
+    }
 
     this.tail.next = node;
     this.tail = node;
   }
 
   indexOf(value: V) {
-    let first = this.head;
+    let curr = this.head;
     let index = 0;
 
-    while (first) {
-      if (value === first.value) return index;
+    while (curr) {
+      if (value === curr.value) return index;
       index++;
-      first = first.next;
+      curr = curr.next;
     }
 
     return -1;
@@ -128,15 +136,19 @@ class LinkedList<V> {
   remove(value: V) {
     if (!this.head) return;
 
-    let curr: LinkedListNode<V> | null = this.head;
+    let curr: LinkedListNode<V> | null = this.head; // pawan
+    let last = null; // null
 
     while (curr) {
-      if (curr.next && curr.next.value === value) {
-        if (curr.next === this.tail) this.tail = curr;
-        curr.next = curr.next.next;
+      console.log(curr.value);
+      if (curr && curr.value === value) {
+        if (curr === this.head) this.head = curr.next;
+        if (curr === this.tail) this.tail = last;
+        if (last) last.next = curr.next;
         this.size--;
         return;
       }
+      last = curr;
       curr = curr.next;
     }
 
@@ -186,7 +198,8 @@ class LinkedList<V> {
 
     while (first) {
       arr.push(first.value);
-      first = first.next;
+      if (first.next) first = first.next;
+      else break;
     }
 
     return arr;
@@ -271,6 +284,13 @@ class LinkedList<V> {
     return false;
   }
 }
+
+const ll = new LinkedList();
+ll.addLast(1);
+ll.addLast(2);
+ll.addLast(3);
+ll.addLast(4);
+ll.addLast(5);
 
 class Stack {
   list: number[] | string[];
@@ -1036,3 +1056,79 @@ class Trie {
     return;
   }
 }
+
+// We use graphs to represent connected objects, like routers in network, and people in social media system.
+// Using graphs we can see these connections and check how strong these connections are.
+
+class GraphNode {
+  label: string;
+
+  constructor(label: string) {
+    this.label = label;
+  }
+}
+
+class Graph {
+  nodes: { [key: string]: GraphNode };
+  adjacencyList: { [key: string]: string[] };
+  size: number;
+
+  constructor() {
+    this.nodes = {};
+    this.adjacencyList = {};
+    this.size = 0;
+  }
+
+  addNode(label: string) {
+    if (this.nodes[label]) throw new Error("Node already exists.");
+
+    const node = new GraphNode(label);
+
+    this.nodes[label] = node;
+    this.adjacencyList[label] = [];
+    this.size++;
+
+    return this.nodes;
+  }
+
+  addEdge(from: string, to: string) {
+    if (!this.nodes[from] || !this.nodes[to])
+      throw new Error("Node doesn't exists");
+
+    this.adjacencyList[from].push(to);
+  }
+
+  removeEdge(from: string, to: string) {
+    if (!this.nodes[from] || !this.nodes[to]) return;
+
+    this.adjacencyList[from].splice(this.adjacencyList[from].indexOf(to), 1);
+
+    return this.nodes[from];
+  }
+
+  removeNode(label: string) {
+    if (!this.nodes[label]) return;
+
+    delete this.nodes[label];
+    this.size--;
+
+    for (let node in this.adjacencyList) {
+      let index = this.adjacencyList[node].indexOf(label);
+      this.adjacencyList[node].splice(index, 1);
+    }
+  }
+
+  print() {
+    for (let label in this.nodes) {
+      const node = this.nodes[label];
+      if (this.adjacencyList[label].length > 0)
+        console.log(
+          `${node.label} is connected to [${this.adjacencyList[
+            label
+          ].toString()}]`
+        );
+    }
+  }
+}
+
+const graph = new Graph();
