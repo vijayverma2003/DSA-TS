@@ -292,8 +292,8 @@ ll.addLast(3);
 ll.addLast(4);
 ll.addLast(5);
 
-class Stack {
-  list: number[] | string[];
+class Stack<T> {
+  list: number[] | string[] | T[];
   size: number;
 
   constructor() {
@@ -301,7 +301,7 @@ class Stack {
     this.size = 0;
   }
 
-  push(value: number | string) {
+  push(value: number | string | T) {
     this.list[this.size++] = value;
   }
 
@@ -397,18 +397,18 @@ class MinStack {
   }
 }
 
-class Queue {
-  list: number[];
+class Queue<T = number> {
+  list: T[];
 
   constructor() {
     this.list = [];
   }
 
-  enqueue(value: number) {
+  enqueue(value: T) {
     this.list.push(value);
   }
 
-  dequeue() {
+  dequeue(): T {
     let first = this.list[0];
 
     for (let i = 0; i < this.list.length; i++) {
@@ -1129,6 +1129,145 @@ class Graph {
         );
     }
   }
+
+  private _depthFirstRecursive(node: string, visited: Set<string>) {
+    console.log(node);
+    visited.add(node);
+
+    for (let neighbour of this.adjacencyList[node])
+      if (!visited.has(node)) this._depthFirstRecursive(neighbour, visited);
+  }
+
+  depthFirstRecursive(node: string) {
+    const root = this.nodes[node];
+    if (!root) return;
+
+    this._depthFirstRecursive(node, new Set<string>());
+  }
+
+  depthFirstIterative(root: string) {
+    const node = this.nodes[root];
+    if (!node) return;
+
+    const visited = new Set();
+    const stack = new Stack<string>();
+
+    stack.push(root);
+
+    while (!stack.empty) {
+      const current = stack.pop();
+
+      if (visited.has(current)) continue;
+
+      console.log(current);
+      visited.add(current);
+
+      for (let neighbour of this.adjacencyList[current as string])
+        if (!visited.has(neighbour)) stack.push(neighbour);
+    }
+  }
+
+  breadthFirstTraversal(root: string) {
+    const node = this.nodes[root];
+    if (!node) return;
+
+    const visited = new Set();
+    const queue = new Queue<string>();
+
+    queue.enqueue(root);
+
+    while (!queue.empty) {
+      const current: string = queue.dequeue();
+
+      if (visited.has(current)) continue;
+
+      console.log(current);
+      visited.add(current);
+
+      for (let neighbour of this.adjacencyList[current as string])
+        if (!visited.has(neighbour)) queue.enqueue(neighbour);
+    }
+  }
+
+  topologicalSort(start: string) {
+    if (!this.nodes[start]) return;
+
+    const stack = new Stack<string>();
+
+    this._topologicalSort(start, stack, new Set());
+
+    const sorted: string[] = [];
+
+    while (!stack.empty) sorted.push(stack.pop() as string);
+
+    return sorted;
+  }
+
+  private _topologicalSort(
+    start: string,
+    stack: Stack<string>,
+    visited: Set<string>
+  ) {
+    if (visited.has(start)) return;
+
+    visited.add(start);
+
+    for (let neighbour of this.adjacencyList[start as string])
+      this._topologicalSort(neighbour, stack, visited);
+
+    stack.push(start);
+  }
+
+  hasCycle() {
+    const all = new Set<string>();
+
+    for (let node in this.nodes) all.add(node);
+
+    const visiting = new Set<string>();
+
+    const visited = new Set<string>();
+
+    while (all.size !== 0) {
+      let current = all.keys().next().value;
+
+      if (this._hasCycle(current, all, visiting, visited)) return true;
+    }
+
+    return false;
+  }
+
+  private _hasCycle(
+    node: string,
+    all: Set<string>,
+    visiting: Set<string>,
+    visited: Set<string>
+  ) {
+    console.log(node);
+    all.delete(node);
+    visiting.add(node);
+
+    for (let neighbour of this.adjacencyList[node as string]) {
+      if (visited.has(neighbour)) continue;
+
+      if (visiting.has(neighbour)) return true;
+
+      if (this._hasCycle(neighbour, all, visiting, visited)) return true;
+    }
+
+    visiting.delete(node);
+    visited.add(node);
+
+    return false;
+  }
 }
 
 const graph = new Graph();
+
+graph.addNode("D");
+graph.addNode("A");
+graph.addNode("B");
+graph.addNode("C");
+
+graph.addEdge("A", "B");
+graph.addEdge("B", "C");
+graph.addEdge("C", "A");
