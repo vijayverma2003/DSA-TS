@@ -285,13 +285,6 @@ class LinkedList<V> {
   }
 }
 
-const ll = new LinkedList();
-ll.addLast(1);
-ll.addLast(2);
-ll.addLast(3);
-ll.addLast(4);
-ll.addLast(5);
-
 class Stack<T> {
   list: number[] | string[] | T[];
   size: number;
@@ -441,14 +434,14 @@ class Queue<T = number> {
   }
 }
 
-class PriorityQueue {
-  list: number[];
+class PriorityQueue<T> {
+  list: T[];
 
   constructor() {
     this.list = [];
   }
 
-  enqueue(value: number) {
+  enqueue(value: T) {
     if (this.list.length === 0) {
       this.list.push(value);
       return;
@@ -1242,7 +1235,6 @@ class Graph {
     visiting: Set<string>,
     visited: Set<string>
   ) {
-    console.log(node);
     all.delete(node);
     visiting.add(node);
 
@@ -1261,13 +1253,167 @@ class Graph {
   }
 }
 
-const graph = new Graph();
+class WeightedGraphNode {
+  edges: WeightedGraphEdge[];
 
-graph.addNode("D");
+  constructor(public value: string) {
+    this.edges = [];
+  }
+
+  addEdge(to: WeightedGraphNode, weight: number) {
+    this.edges.push(new WeightedGraphEdge(this, to, weight));
+  }
+
+  getEdges() {
+    return this.edges;
+  }
+}
+
+class WeightedGraphEdge {
+  constructor(
+    public from: WeightedGraphNode,
+    public to: WeightedGraphNode,
+    public weight: number
+  ) {}
+
+  toString() {
+    return `${this.from.value} -${this.weight}-> ${this.to.value}`;
+  }
+}
+
+class NodeEntry {
+  constructor(public node: WeightedGraphNode, public priority: number) {}
+}
+
+class PriorityQueueForNodeEntry {
+  list: NodeEntry[];
+
+  constructor() {
+    this.list = [];
+  }
+
+  enqueue(value: NodeEntry) {
+    this.list.push(value);
+
+    this.list.sort((a, b) => {
+      if (a.priority > b.priority) return 1;
+      else if (a.priority < b.priority) return -1;
+      else return 0;
+    });
+  }
+
+  dequeue() {
+    const first = this.list[0];
+    this.list.splice(0, 1);
+    return first;
+  }
+
+  get empty() {
+    return this.list.length === 0;
+  }
+
+  get peek() {
+    return this.list[0];
+  }
+}
+
+class WeightedGraph<T = string> {
+  nodes: { [key: string]: WeightedGraphNode };
+
+  constructor() {
+    this.nodes = {};
+  }
+
+  addNode(value: string) {
+    if (!value) throw new Error("Value should be of type string");
+
+    const node = new WeightedGraphNode(value);
+    if (!this.nodes[value]) this.nodes[value] = node;
+
+    return node;
+  }
+
+  addEdge(from: string, to: string, weight: number = 0) {
+    const fromNode = this.nodes[from];
+    if (!fromNode) throw new Error("From node doesn't exists");
+
+    const toNode = this.nodes[to];
+    if (!toNode) throw new Error("To node doesn't exists");
+
+    fromNode.addEdge(toNode, weight);
+    toNode.addEdge(fromNode, weight);
+  }
+
+  print() {
+    for (let node in this.nodes) {
+      for (let neighbour of this.nodes[node].getEdges())
+        console.log(neighbour.toString());
+    }
+  }
+
+  shortestPath(from: string, to: string) {
+    const fromNode = this.nodes[from];
+    const toNode = this.nodes[to];
+
+    if (!fromNode || !toNode) return null;
+
+    const distances: { [key: string]: number } = {};
+    const previous: { [key: string]: string } = {};
+    const visited = new Set();
+
+    for (let node in this.nodes) distances[node] = Number.MAX_VALUE;
+    distances[from] = 0;
+
+    const queue = new PriorityQueueForNodeEntry();
+    queue.enqueue(new NodeEntry(fromNode, 0));
+
+    while (!queue.empty) {
+      let nodeEntry = queue.dequeue();
+
+      for (let node of nodeEntry.node.getEdges()) {
+        if (visited.has(node.to.value)) continue;
+
+        let distance = node.weight + distances[nodeEntry.node.value];
+
+        if (distances[node.to.value] > distance) {
+          previous[node.to.value] = nodeEntry.node.value;
+          distances[node.to.value] = distance;
+        }
+
+        queue.enqueue(new NodeEntry(node.to, distances[node.to.value]));
+      }
+
+      visited.add(nodeEntry.node.value);
+    }
+
+    const stack = new Stack();
+
+    let current = to;
+    while (current) {
+      stack.push(current);
+      current = previous[current];
+    }
+
+    const path = [];
+
+    while (!stack.empty) path.push(stack.pop());
+
+    return path.join("");
+  }
+}
+
+const graph = new WeightedGraph();
+
 graph.addNode("A");
 graph.addNode("B");
 graph.addNode("C");
+graph.addNode("D");
+graph.addNode("E");
 
-graph.addEdge("A", "B");
-graph.addEdge("B", "C");
-graph.addEdge("C", "A");
+graph.addEdge("A", "B", 3);
+graph.addEdge("A", "C", 4);
+graph.addEdge("A", "D", 2);
+graph.addEdge("B", "D", 6);
+graph.addEdge("B", "E", 1);
+graph.addEdge("D", "E", 5);
+graph.addEdge("D", "C", 1);
