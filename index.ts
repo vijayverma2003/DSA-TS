@@ -1400,6 +1400,39 @@ class WeightedGraph<T = string> {
 
     return path.join("");
   }
+
+  hasCycle() {
+    const visited = new Set<string>();
+
+    for (let node in this.nodes)
+      if (
+        !visited.has(this.nodes[node].value) &&
+        this._hasCycle(this.nodes[node], visited, null)
+      )
+        return true;
+
+    return false;
+  }
+
+  private _hasCycle(
+    node: WeightedGraphNode,
+    visited: Set<string> = new Set(),
+    parent: string | null = null
+  ) {
+    visited.add(node.value);
+
+    for (let neighbour of node.getEdges()) {
+      if (neighbour.to.value === parent) continue;
+
+      if (
+        visited.has(neighbour.to.value) ||
+        this._hasCycle(neighbour.to, visited, node.value)
+      )
+        return true;
+    }
+
+    return false;
+  }
 }
 
 const graph = new WeightedGraph();
@@ -1407,13 +1440,7 @@ const graph = new WeightedGraph();
 graph.addNode("A");
 graph.addNode("B");
 graph.addNode("C");
-graph.addNode("D");
-graph.addNode("E");
 
 graph.addEdge("A", "B", 3);
-graph.addEdge("A", "C", 4);
-graph.addEdge("A", "D", 2);
-graph.addEdge("B", "D", 6);
-graph.addEdge("B", "E", 1);
-graph.addEdge("D", "E", 5);
-graph.addEdge("D", "C", 1);
+graph.addEdge("B", "C", 4);
+graph.addEdge("C", "A", 4);
